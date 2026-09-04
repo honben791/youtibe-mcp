@@ -30,6 +30,7 @@ from youtube_transcript_api._errors import (
 )
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 API_KEY = os.environ.get("YOUTUBE_API_KEY")
 if not API_KEY:
@@ -41,9 +42,16 @@ if not API_KEY:
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
-# stateless_http + json_response is the recommended config for production
-# remote deployments (no server-side session state to manage).
-mcp = FastMCP("youtube", stateless_http=True, json_response=True)
+# The SDK's DNS-rebinding protection defaults to trusting only localhost,
+# which blocks every real request once deployed behind a public host like
+# Render. This server has no localhost-only trust boundary to protect
+# (it's a public HTTPS API secured by our own API key), so we disable it.
+mcp = FastMCP(
+    "youtube",
+    stateless_http=True,
+    json_response=True,
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+)
 
 # Most hosting platforms (Render, Railway, Fly.io) inject a PORT env var
 # and require binding to 0.0.0.0, not localhost.
