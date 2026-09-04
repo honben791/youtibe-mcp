@@ -1,4 +1,4 @@
-mcp>=1.9.0
+mcp>=mcp<2.0.0
 google-api-python-client>=2.140.0
 youtube-transcript-api>=0.6.2
 uvicorn>=0.30.0
